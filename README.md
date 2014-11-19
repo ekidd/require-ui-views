@@ -12,26 +12,26 @@ Installation of Node.js is a prerequisite to running the Grunt build tool. Run t
 
 1. On the command line, navigate to the root directory of the project and enter the following:
 
-    cd tools
-    node-install
+        cd tools
+        node-install
 
 **Mac/Linux:**
 
 1. Configure Finder show hidden files by opening a terminal window and entering the following:
 
-    defaults write com.apple.finder AppleShowAllFiles TRUE
-    killall Finder
+        defaults write com.apple.finder AppleShowAllFiles TRUE
+        killall Finder
 
 1. In your home directory, open the file `.bash_profile` in an editor (depending on your system, this file may also be called `.profile`, `.zlogin`, etc). Append the following lines to the very bottom, and save the file:
 
-    export N_PREFIX=$HOME/.node
-    export PATH=$N_PREFIX/bin:$PATH
+        export N_PREFIX=$HOME/.node
+        export PATH=$N_PREFIX/bin:$PATH
 
 1. Open a *NEW* terminal window. On the command line, navigate to the root directory of the project and enter the following:
 
-    cd tools
-    chmod 770 node-install.sh
-    ./node-install.sh
+        cd tools
+        chmod 770 node-install.sh
+        ./node-install.sh
 
 ### Step Two - Configure build environment
 
@@ -47,7 +47,7 @@ A baseline set of Grunt build tasks are included which will work for most projec
 1. (Optional) Add a new line for each Grunt plugin you want to add to `package.json` in the project root.
 1. On the command line, navigate to the root directory of the project and enter the following.
 
-    npm install
+        npm install
 
 1. This will scan the file `package.json` and download each plugin into the directory `node_modules`.
 
@@ -57,12 +57,12 @@ Add 3rd-party libraries to your project using bower.
 1. (Optional) Add a new line for each third-party library you want to `bower.json` in the project root
 2. On the command line, navigate to the root directory of the project and enter the following. This will scan the file `bower.json` and download each library into the directory `/src/assets/vendor`.
 
-    bower install
+        bower install
 
 1. Commit the new libraries created under `src/assets/vendor` to source control.
 2. (Optional) Run the following command to automatically add a reference to each bower library into your code. If you're using RequireJS, a new entry for each library will be added to  `/src/assets/scripts/config.js`. Otherwise, script tags will be added `/src/index.html`.
 
-    grunt install
+        grunt install
 
 ### Step Five - Run build
 
@@ -76,7 +76,7 @@ Any time you make changes to any file in your source code, run a build as follow
 1. Make changes to any file in `/src` (markup, stylesheets, scripts, etc.)
 1. On the command line, navigate to the root directory of your project and enter the following:
 
-    grunt
+        grunt
 
 **Building automatically**
 
@@ -104,9 +104,9 @@ _Use this method only when developing locally, do not use this method on shared 
 * DO NOT MODIFY DIRECTLY. INSTEAD, MODIFY THE APPROPRIATE SOURCE CODE.
 * IN GENERAL, DO NOT COMMIT TO SOURCE CONTROL
 
-    /docs
-        /js                 /* Generated JavaScript documentation  */
-    /node_modules           /* node.js module dependencies needed by grunt */
-    /tools
-        /node               /* Optional standalone executables for node+bower+grunt to be bundled with project */
-    /web                    /* The built website output runnable in the browser */
+        /docs
+            /js                 /* Generated JavaScript documentation  */
+        /node_modules           /* node.js module dependencies needed by grunt */
+        /tools
+            /node               /* Optional standalone executables for node+bower+grunt to be bundled with project */
+        /web                    /* The built website output runnable in the browser */
