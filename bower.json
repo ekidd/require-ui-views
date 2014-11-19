@@ -1,0 +1,14 @@
+{
+  "name": "require-ui-views",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "nerdery-reset-css": "./tools/cache/nerdery-reset-css",
+    "requirejs": "2.1.9",
+    "jquery": "components/jquery#1.11.0",
+    "modernizr": "components/modernizr#2.6.2",
+    "nerdery-has-js": "./tools/cache/nerdery-has-js",
+    "nerdery-function-bind": "./tools/cache/nerdery-function-bind"
+  },
+  "devDependencies": {}
+}
