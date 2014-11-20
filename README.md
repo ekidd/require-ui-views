@@ -86,7 +86,7 @@ _Use this method only when developing locally, do not use this method on shared 
 
 1. On the command line, navigate to the root directory of your project and enter the following:
 
-    grunt watch
+        grunt watch
 
 1. A persistent file watcher will run. This automatically does a new Grunt build every time it detects a change to a file in `/src` (markup, stylesheets, scripts, etc.)
 
@@ -105,8 +105,8 @@ _Use this method only when developing locally, do not use this method on shared 
 * IN GENERAL, DO NOT COMMIT TO SOURCE CONTROL
 
         /docs
-            /js                 /* Generated JavaScript documentation  */
-        /node_modules           /* node.js module dependencies needed by grunt */
+            /js        /* Generated JavaScript documentation  */
+        /node_modules  /* node.js module dependencies needed by grunt */
         /tools
-            /node               /* Optional standalone executables for node+bower+grunt to be bundled with project */
-        /web                    /* The built website output runnable in the browser */
+            /node      /* Optional standalone executables for node+bower+grunt to be bundled with project */
+        /web           /* The built website output runnable in the browser */
