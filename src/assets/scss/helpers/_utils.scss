@@ -1,0 +1,14 @@
+// ----------------------------------------------------------------------------
+// Global utilities
+// ----------------------------------------------------------------------------
+.hasModal {
+    overflow: hidden;
+}
+
+.isVisuallyHidden {
+    @include isVisuallyHidden();
+}
+
+.clearfix {
+    @include clearfix();
+}

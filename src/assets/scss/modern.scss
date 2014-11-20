@@ -1,6 +1,8 @@
-/* ---------------------------------------------------------------------
- Modern Styles
------------------------------------------------------------------------- */
 @import "base/_reset";
 @import "base/_elements";
 
+@import "helpers/_mixins";
+@import "helpers/_utils";
+@import "helpers/_vendor";
+
+@import "modules/container/modal/_modal";

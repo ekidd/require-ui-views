@@ -1,0 +1,33 @@
+// ----------------------------------------------------------------------------
+// Vendor prefix mixins
+// ----------------------------------------------------------------------------
+@mixin box-sizing($value) {
+    -webkit-box-sizing: $value;
+    -moz-box-sizing: $value;
+    box-sizing: $value;
+}
+
+// Multiple arguments may be passed in.
+@mixin transition($transition...) {
+    -webkit-transition: $transition;
+    -moz-transition: $transition;
+    -o-transition: $transition;
+    transition: $transition;
+}
+
+// Multiple arguments may be passed in.
+@mixin transform($transform...) {
+    -webkit-transform: $transform;
+    -moz-transform: $transform;
+    -ms-transform: $transform;
+    -o-transform: $transform;
+    transform: $transform;
+}
+
+// Argument is a number from 0 and 1.
+@mixin opacity($value) {
+    $ieValue: abs($value * 100);
+    -ms-filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=#{$ieValue});
+    filter: alpha(opacity=$ieValue);
+    opacity: $value;
+}

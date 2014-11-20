@@ -1,8 +1,11 @@
 define(function(require, exports, module) { // jshint ignore:line
     'use strict';
-    
+
+    var $ = require('jquery');
     var Modernizr = require('modernizr');
     var HasJs = require('nerdery-has-js');
+
+    var ModalView = require('./views/ModalView');
 
     /**
      * Initial application setup. Runs once upon every page load.
@@ -24,7 +27,10 @@ define(function(require, exports, module) { // jshint ignore:line
      * @private
      */
     proto.init = function() {
-        // Create your views here
+        // Modal View
+        // Optional: pass in an object of config options as a second argument
+        // i.e. { duration: 1000, autoPosition: false }
+        this.modalView = new ModalView($('#modal'));
     };
 
     return App;
