@@ -1,17 +1,18 @@
 define(function(require, exports, module) { // jshint ignore:line
     'use strict';
 
+    // require('modernizr'); TODO: turn this on when adding feature detection
     var $ = require('jquery');
+    // var modernizr = window.Modernizr; TODO: turn this on when adding feature detection
 
     /**
-     * An object of strings used by this view
+     * An object of strings used in this view
      * @default null
      * @property STRINGS
      * @type {Object}
      * @final
      */
     var STRINGS = {
-        TRIGGER: 'data-modal-trigger',
         TARGET: 'data-modal-target',
         SNEEZEGUARD: 'sneezeguard',
         IS_ACTIVE: 'isActive',
@@ -19,19 +20,22 @@ define(function(require, exports, module) { // jshint ignore:line
     };
 
     /**
-     * An object of the selectors used by this view
+     * An object of the selectors used in this view
      * @default null
      * @property SELECTORS
      * @type {Object}
      * @final
      */
     var SELECTORS = {
-        TARGET: '[' + STRINGS.TRIGGER + ']',
-        TRIGGER: '[' + STRINGS.TARGET + ']',
-        MODAL_TARGET: '.js-modal-target',
-        MODAL_CONTENT: '.js-modal-wrapper',
-        MODAL_CLOSE: '.js-modal-close'
+        MODAL_TRIGGER_CLASS: '.js-modal-trigger',
+        MODAL_TARGET_CLASS: '.js-modal-target',
+        MODAL_CONTENT_CLASS: '.js-modal-wrapper',
+        MODAL_CLOSE_CLASS: '.js-modal-close'
     };
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // HELPERS
+    //////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Utility method for getting positioning offsets
@@ -41,10 +45,40 @@ define(function(require, exports, module) { // jshint ignore:line
      * @return {Integer} offset
      */
     var _getOffset = function(number) {
-        var offset = Math.round(number / 2) * -1;
-
-        return offset;
+        return Math.round(number / 2) * -1;
     };
+
+    /**
+     * Get the target modal
+     * @method _getModalTarget
+     * @private
+     * @param {Object} e The event object
+     * @return {Object} $modalTarget A jQuery object of the intended modal target
+     */
+    var _getModalTarget = function(e) {
+        return $('#' + $(e.currentTarget).attr(STRINGS.TARGET));
+    };
+
+    /**
+     * Centers the modal in the viewport
+     * @method _setPosition
+     * @private
+     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     */
+    var _setPosition = function($modalTarget) {
+        var $modalContent = $modalTarget.find(SELECTORS.MODAL_CONTENT_CLASS);
+
+        $modalContent.css({
+            position: 'absolute',
+            top: '50%',
+            marginLeft: _getOffset($modalContent.innerWidth()) + 'px',
+            marginTop: _getOffset($modalContent.innerHeight())  + 'px'
+        });
+    };
+
+    //////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    //////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Skeleton modal view.
@@ -58,7 +92,6 @@ define(function(require, exports, module) { // jshint ignore:line
      * content height does not exceed the window height
      * @constructor
      */
-
     var ModalView = function($element, options) {
         /**
          * A reference to the containing DOM element
@@ -104,11 +137,71 @@ define(function(require, exports, module) { // jshint ignore:line
          * A reference to the document
          *
          * @default null
-         * @property $window
+         * @property $document
          * @type {jQuery}
          * @public
          */
         this.$document = null;
+
+        /**
+         * A reference to the clicked modal trigger
+         *
+         * @default null
+         * @property $returnFocus
+         * @type {jQuery}
+         * @public
+         */
+        this.$returnFocus = null;
+
+        /**
+         * A reference to the modal
+         *
+         * @default null
+         * @property $modal
+         * @type {jQuery}
+         * @public
+         */
+        this.$modal = null;
+
+        /**
+         * A reference to the modal trigger
+         *
+         * @default null
+         * @property $trigger
+         * @type {jQuery}
+         * @public
+         */
+        this.$trigger = null;
+
+        /**
+         * A reference to the modal content
+         *
+         * @default null
+         * @property $modalContent
+         * @type {jQuery}
+         * @public
+         */
+        this.$modalContent = null;
+
+        /**
+         * A reference to the modal close trigger
+         *
+         * @default null
+         * @property $modalClose
+         * @type {jQuery}
+         * @public
+         */
+        this.$modalClose = null;
+
+        /**
+         * A reference to the sneezeguard
+         *
+         * @default null
+         * @property $sneezeguard
+         * @type {jQuery}
+         * @public
+         */
+        this.$sneezeguard = null;
 
         /**
          * Default configuration settings
@@ -129,11 +222,11 @@ define(function(require, exports, module) { // jshint ignore:line
          * Tracks whether component is enabled
          *
          * @default false
-         * @property isEnabled
+         * @property viewIsEnabled
          * @type {bool}
          * @public
          */
-        this.isEnabled = false;
+        this.viewIsEnabled = false;
 
         /**
          * Tracks whether modal is present
@@ -151,9 +244,9 @@ define(function(require, exports, module) { // jshint ignore:line
         }
 
         this.init();
-
     };
 
+    // Store a reference to the prototype
     var proto = ModalView.prototype;
 
     /**
@@ -182,6 +275,7 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.setupHandlers = function() {
         this.onTriggerClickHandler = this.onTriggerClick.bind(this);
+        this.onCloseClickHandler = this.onCloseClick.bind(this);
         this.onKeyUpHandler = this.onKeyUp.bind(this);
         this.onDocumentClickHandler = this.onDocumentClick.bind(this);
 
@@ -196,21 +290,19 @@ define(function(require, exports, module) { // jshint ignore:line
      * @private
      * @chainable
      */
-
     proto.createChildren = function() {
         this.$html = $('html');
         this.$body = $('body');
         this.$window = $(window);
         this.$document = $(document);
-        this.$target = this.$element.find(SELECTORS.TARGET);
-        this.$modal = $(SELECTORS.MODAL_TARGET);
-        this.$trigger = $(SELECTORS.TRIGGER);
-        this.$content = this.$element.find(SELECTORS.MODAL_CONTENT);
-        this.$close = this.$element.find(SELECTORS.MODAL_CLOSE);
+        this.$modal = $(SELECTORS.MODAL_TARGET_CLASS);
+        this.$trigger = $(SELECTORS.MODAL_TRIGGER_CLASS);
+        this.$modalContent = this.$element.find(SELECTORS.MODAL_CONTENT_CLASS);
+        this.$modalClose = this.$element.find(SELECTORS.MODAL_CLOSE_CLASS);
         this.$sneezeguard = $('<div />', {
                 class: STRINGS.SNEEZEGUARD
             })
-            .prependTo(this.$body);
+            .appendTo(this.$body);
 
         return this;
     };
@@ -227,12 +319,12 @@ define(function(require, exports, module) { // jshint ignore:line
         this.$body = null;
         this.$window = null;
         this.$document = null;
-        this.$target = null;
         this.$modal = null;
         this.$trigger = null;
-        this.$content = null;
-        this.$close = null;
+        this.$modalContent = null;
+        this.$modalClose = null;
         this.$sneezeguard = null;
+        this.$returnFocus = null;
 
         return this;
     };
@@ -247,18 +339,18 @@ define(function(require, exports, module) { // jshint ignore:line
      * @chainable
      */
     proto.enable = function() {
-        if (this.isEnabled) {
+        if (this.viewIsEnabled) {
             return this;
         }
 
         this.$trigger.on('click', this.onTriggerClickHandler);
+        this.$modalClose.on('click', this.onCloseClickHandler);
         this.$document.on('click', this.onDocumentClickHandler);
         this.$document.on('keyup', this.onKeyUpHandler);
 
-        this.isEnabled = true;
+        this.viewIsEnabled = true;
 
         return this;
-
     };
 
     /**
@@ -271,18 +363,18 @@ define(function(require, exports, module) { // jshint ignore:line
      * @chainable
      */
     proto.disable = function() {
-        if (!this.isEnabled) {
+        if (!this.viewIsEnabled) {
             return this;
         }
 
         this.$trigger.off('click', this.onTriggerClickHandler);
+        this.$modalClose.off('click', this.onCloseClickHandler);
         this.$document.off('click', this.onDocumentClickHandler);
         this.$document.off('keyup', this.onKeyUpHandler);
 
-        this.isEnabled = false;
+        this.viewIsEnabled = false;
 
         return this;
-
     };
 
     /**
@@ -299,7 +391,125 @@ define(function(require, exports, module) { // jshint ignore:line
             .removeChildren();
 
         return this;
+    };
 
+    /**
+     * Show the modal
+     * Triggers auto positioning if applicable
+     * @method showModal
+     * @public
+     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     */
+    proto.showModal = function($modalTarget) {
+        // TODO: Add a function to display the modal off screen, measure it, then move on
+        // This should allow for width-agnostic modals to still be centered correctly
+        // Also may want to move some of this to a layout function to provide better support for no-js
+        $modalTarget
+            .css({
+                display: 'block',
+                opacity: 0
+            });
+
+        this.$sneezeguard
+            .css({
+                display: 'block',
+                opacity: 0
+            });
+
+        if (this.$modalContent.height() < this.$window.height() && this.options.autoPosition) {
+            _setPosition($modalTarget);
+        }
+
+        this.$html.addClass(STRINGS.HAS_MODAL);
+        this.toggleModal($modalTarget, true);
+
+        // Set focus to the modal close element
+        this.$modalClose.focus();
+    };
+
+    /**
+     * Hides the modal
+     * @method hideModal
+     * @public
+     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     */
+    proto.hideModal = function($modalTarget) {
+        this.toggleModal($modalTarget, false);
+
+        if (this.$returnFocus != null) {
+            // Return focus to the element that triggered the modal and reset reference
+            this.$returnFocus.focus();
+            this.$returnFocus = null;
+        }
+    };
+
+    /**
+     * Toggles the modal visibility
+     * @method toggleModal
+     * @public
+     * @param {jQuery} $modalTarget A jQuery object of the modal
+     * @param {bool}
+     */
+    proto.toggleModal = function($modalTarget, isActive) {
+        var self = this;
+        var opacity = isActive ? 1 : 0;
+
+        // TODO: add a check for csstransition support, and if true use jQuery as the fallback
+        // if (!modernizr.csstransitions) {
+            $modalTarget
+                .animate({
+                    opacity: opacity
+                },
+                this.options.duration,
+                function() {
+                    $modalTarget
+                        .toggleClass(STRINGS.IS_ACTIVE)
+                        .removeAttr('style');
+                    self.onComplete(isActive);
+                });
+
+            this.$sneezeguard
+                .animate({
+                    opacity: opacity
+                },
+                this.options.duration,
+                function() {
+                    self.$sneezeguard
+                        .toggleClass(STRINGS.IS_ACTIVE)
+                        .removeAttr('style');
+                });
+        // }
+    };
+
+    /**
+     * Runs tasks on completion of animation
+     * @method onComplete
+     * @public
+     * @param {bool}
+     */
+    proto.onComplete = function(isActive) {
+        if (!isActive) {
+            this.$html.removeClass(STRINGS.HAS_MODAL);
+        }
+
+        this.modalIsActive = isActive;
+    };
+
+    /**
+     * Hide any modals that may be showing in the DOM
+     * @method cleanUp
+     * @public
+     */
+    proto.cleanUp = function() {
+        var self = this;
+        var $modalTarget = $(SELECTORS.MODAL_TARGET_CLASS);
+
+        $.each(
+            $modalTarget,
+            function() {
+                self.hideModal($(this));
+            }
+        );
     };
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -307,17 +517,45 @@ define(function(require, exports, module) { // jshint ignore:line
     //////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Click handler toggles modal visibility
+     * Click handler shows modal
      * @method onTriggerClick
      * @public
      * @param {Object} e The event object returned by the click
      */
     proto.onTriggerClick = function(e) {
-        var name = $(e.currentTarget).attr(STRINGS.TARGET);
-        var $modalTarget = $('[' + STRINGS.TRIGGER + '=' + name + ']');
+        var $modalTarget = _getModalTarget(e);
+
+        // if the $modalTarget is not found, return early
+        if (!$modalTarget.length) {
+            return;
+        }
+
         e.preventDefault();
 
-        this._toggle($modalTarget);
+        // Set a reference to the activating trigger
+        if (this.$returnFocus == null) {
+            this.$returnFocus = $(e.currentTarget);
+        }
+
+        this.showModal($modalTarget);
+    };
+
+    /**
+     * Click handler closes modal
+     * @method onCloseClick
+     * @public
+     * @param {Object} e The event object returned by the click
+     */
+    proto.onCloseClick = function(e) {
+        var $modalTarget = _getModalTarget(e);
+
+        // if the $modalTarget is not found, return early
+        if (!$modalTarget.length) {
+            return;
+        }
+
+        e.preventDefault();
+        this.hideModal($modalTarget);
     };
 
     /**
@@ -327,11 +565,9 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} e The event object returned by the keyup
      */
     proto.onKeyUp = function(e) {
-        var code = e.keyCode;
-
         // keyCode 27 = escape key
-        if (code === 27 && this.modalIsActive) {
-            this._clean();
+        if (e.keyCode === 27 && this.modalIsActive) {
+            this.cleanUp();
         }
     };
 
@@ -342,208 +578,14 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} e The event object returned by the click
      */
     proto.onDocumentClick = function(e) {
-        var hitArea = this.$element.find(SELECTORS.MODAL_CONTENT);
-        var eTarget = $(e.target);
-
-        // If the modal is active, return early
+        // If the modal is not active, return early
         if (!this.modalIsActive) {
             return;
         }
 
-        if(!eTarget.closest(hitArea).length) {
-            this._clean();
+        if(!$(e.target).closest(this.$modalContent).length) {
+            this.cleanUp();
         }
-
-    };
-
-    //////////////////////////////////////////////////////////////////////////////////
-    // HELPERS
-    //////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Toggles the modal visibility
-     * @method _toggle
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the modal
-     */
-    proto._toggle = function($modalTarget) {
-        if ($modalTarget.hasClass(STRINGS.IS_ACTIVE)) {
-            this._hide($modalTarget);
-            this._toggleSneezeguard(false);
-            this._setupContext(false);
-        } else {
-            this._show($modalTarget);
-            this._toggleSneezeguard(true);
-            this._setupContext(true);
-            this.$close.focus(); // Set focus to the close element
-        }
-    };
-
-    /**
-     * Shows the modal
-     * Triggers auto positioning if applicable
-     * @method _show
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
-     */
-    proto._show = function($modalTarget) {
-        var self = this;
-
-        $modalTarget.css({
-            display: 'block',
-            opacity: 0
-        });
-
-        if (this.$content.height() < this.$window.height() && this.options.autoPosition) {
-            this._autoPosition($modalTarget);
-        }
-
-        $modalTarget
-            .animate({
-                opacity: 1
-            },
-            this.options.duration,
-            function() {
-                $modalTarget.addClass(STRINGS.IS_ACTIVE);
-                self._onComplete($modalTarget);
-            });
-    };
-
-    /**
-     * Hides the modal
-     * @method _hide
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
-     */
-    proto._hide = function($modalTarget) {
-        var self = this;
-
-        $modalTarget
-            .animate({
-                opacity: 0
-            },
-            this.options.duration,
-            function() {
-                $modalTarget.removeClass(STRINGS.IS_ACTIVE);
-                self._onComplete($modalTarget);
-            });
-    };
-
-    /**
-     * DOM and state updates after the modal is shown or hidden
-     * @method _onComplete
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
-     */
-    proto._onComplete = function($modalTarget) {
-        if ($modalTarget.hasClass(STRINGS.IS_ACTIVE)) {
-            this.modalIsActive = true;
-        } else {
-            this.modalIsActive = false;
-            $modalTarget.hide();
-            this.$sneezeguard.hide();
-        }
-    };
-
-    /**
-     * Centers the modal in the viewport
-     * @method _autoPosition
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
-     */
-    proto._autoPosition = function($modalTarget) {
-        var measurement = this._measure($modalTarget);
-
-        this.$content.css({
-            position: 'absolute',
-            top: '50%',
-            marginLeft: measurement.y + 'px',
-            marginTop: measurement.x  + 'px'
-        });
-
-    };
-
-    /**
-     * Helper function that returns measurements
-     * @method _measure
-     * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
-     * @return {measurement} An object of dimensions and position offsets
-     */
-    proto._measure = function($modalTarget) {
-        var measurement = {};
-        measurement.w = this.$content.innerWidth();
-        measurement.h = this.$content.innerHeight();
-        measurement.x = _getOffset(measurement.h);
-        measurement.y = _getOffset(measurement.w);
-
-        return measurement;
-    };
-
-    /**
-     * Handles showing and hiding the opaque modal overlay.
-     * @method _toggleSneezeguard
-     * @private
-     * @param {bool} state True when the modal is showing, false when the modal is hiding
-     */
-    proto._toggleSneezeguard = function(state) {
-        var self = this;
-
-        if (!state) {
-            this.$sneezeguard
-                .animate({
-                    opacity: 0
-                },
-                this.options.duration,
-                function() {
-                    self.$sneezeguard.removeClass(STRINGS.IS_ACTIVE);
-                });
-        } else {
-            this.$sneezeguard.css({
-                display: 'block',
-                opacity: 0
-            });
-            this.$sneezeguard
-                .animate({
-                    opacity: 1
-                },
-                this.options.duration,
-                function() {
-                    self.$sneezeguard.addClass(STRINGS.IS_ACTIVE);
-                });
-        }
-    };
-
-    /**
-     * Adds a class to the html element
-     * This avoids double scrollbars when the modal is scrollable
-     * @method _setupContext
-     * @private
-     * @param {bool} state True when the modal is showing, false when the modal is hiding
-     */
-    proto._setupContext = function(state) {
-        if (!state) {
-            this.$html.removeClass(STRINGS.HAS_MODAL);
-        } else {
-            this.$html.addClass(STRINGS.HAS_MODAL);
-        }
-    };
-
-    /**
-     * Hides any modals that may be showing in the DOM
-     * @method _clean
-     * @private
-     */
-    proto._clean = function() {
-        var self = this;
-        var $modalTarget = $(SELECTORS.MODAL_TARGET);
-
-        $.each(
-            $modalTarget,
-            function() {
-                self._hide($(this));
-            }
-        );
     };
 
     return ModalView;

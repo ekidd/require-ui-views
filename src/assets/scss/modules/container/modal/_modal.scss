@@ -1,7 +1,13 @@
 /* ---------------------------------------------------------------------
  Modal
 ------------------------------------------------------------------------ */
- .sneezeguard {
+// When the modal is active, hide overflow to avoid double scrollbars
+// .hasModal is added via ModalView.js
+html.hasModal {
+    overflow: hidden;
+}
+
+.sneezeguard {
     position: fixed; // fixed to window using conflicting positioning in order to fill screen
     top: 0;
     right: 0;
@@ -12,10 +18,12 @@
     background-color: rgba(0, 0, 0, 0.3);
     z-index: 900; // Intended to be placed above all site content
     @include opacity(0);
+    // @include transition(1s linear opacity); TODO: add check for csstransitions in js
 }
 
 // isActive class applied via ModalView.js
 .sneezeguard.isActive {
+    display: block;
     @include opacity(1);
 }
 
@@ -30,17 +38,18 @@
     overflow-y: scroll;
     z-index: 1000; // Intended to be placed above sneezeguard
     @include opacity(0);
+    // @include transition(1s linear opacity); TODO: add check for csstransitions in js
 }
 
 // isActive class applied via ModalView.js
 .modal.isActive {
+    display: block;
     @include opacity(1);
 }
 
 .modal-wrapper {
     left: 50%;
-    right: auto;
-    width: 550px;
+    width: 616px;
     margin: 26px auto;
     padding: 18px 0;
     background: #ffffff;
