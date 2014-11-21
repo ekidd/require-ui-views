@@ -16,6 +16,7 @@ define(function(require, exports, module) { // jshint ignore:line
         TARGET: 'data-modal-target',
         SNEEZEGUARD: 'sneezeguard',
         IS_ACTIVE: 'isActive',
+        IS_VISUALLY_HIDDEN: 'isVisuallyHidden',
         HAS_MODAL: 'hasModal'
     };
 
@@ -69,8 +70,6 @@ define(function(require, exports, module) { // jshint ignore:line
         var $modalContent = $modalTarget.find(SELECTORS.MODAL_CONTENT_CLASS);
 
         $modalContent.css({
-            position: 'absolute',
-            top: '50%',
             marginLeft: _getOffset($modalContent.innerWidth()) + 'px',
             marginTop: _getOffset($modalContent.innerHeight())  + 'px'
         });
@@ -404,23 +403,14 @@ define(function(require, exports, module) { // jshint ignore:line
         // TODO: Add a function to display the modal off screen, measure it, then move on
         // This should allow for width-agnostic modals to still be centered correctly
         // Also may want to move some of this to a layout function to provide better support for no-js
-        $modalTarget
-            .css({
-                display: 'block',
-                opacity: 0
-            });
+        $modalTarget.removeClass(STRINGS.IS_VISUALLY_HIDDEN);
+        this.$html.addClass(STRINGS.HAS_MODAL);
+        this.$sneezeguard.show();
 
-        this.$sneezeguard
-            .css({
-                display: 'block',
-                opacity: 0
-            });
-
-        if (this.$modalContent.height() < this.$window.height() && this.options.autoPosition) {
+        if (this.options.autoPosition && this.$modalContent.height() < this.$window.height()) {
             _setPosition($modalTarget);
         }
 
-        this.$html.addClass(STRINGS.HAS_MODAL);
         this.toggleModal($modalTarget, true);
 
         // Set focus to the modal close element
@@ -437,7 +427,7 @@ define(function(require, exports, module) { // jshint ignore:line
         this.toggleModal($modalTarget, false);
 
         if (this.$returnFocus != null) {
-            // Return focus to the element that triggered the modal and reset reference
+            // Return focus to the element that triggered the modal
             this.$returnFocus.focus();
             this.$returnFocus = null;
         }
@@ -465,7 +455,7 @@ define(function(require, exports, module) { // jshint ignore:line
                     $modalTarget
                         .toggleClass(STRINGS.IS_ACTIVE)
                         .removeAttr('style');
-                    self.onComplete(isActive);
+                    self.onComplete($modalTarget, isActive);
                 });
 
             this.$sneezeguard
@@ -485,11 +475,16 @@ define(function(require, exports, module) { // jshint ignore:line
      * Runs tasks on completion of animation
      * @method onComplete
      * @public
+     * @param {jQuery} $modalTarget A jQuery object of the modal
      * @param {bool}
      */
-    proto.onComplete = function(isActive) {
+    proto.onComplete = function($modalTarget, isActive) {
         if (!isActive) {
             this.$html.removeClass(STRINGS.HAS_MODAL);
+            $modalTarget.addClass(STRINGS.IS_VISUALLY_HIDDEN);
+            // TODO: clear aria-live="polite"
+        } else {
+            // TODO: add aria-live="polite"
         }
 
         this.modalIsActive = isActive;

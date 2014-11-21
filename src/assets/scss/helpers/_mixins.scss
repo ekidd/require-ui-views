@@ -17,6 +17,10 @@
     overflow: hidden !important;
 }
 
+.isVisuallyHidden {
+    @include isVisuallyHidden();
+}
+
 // ----------------------------------------------------------------------------
 // Micro Clearfix
 //
@@ -45,4 +49,8 @@
     & {
         *zoom: 1;
     }
+}
+
+.clearfix {
+    @include clearfix();
 }

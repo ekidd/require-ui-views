@@ -1,65 +1,102 @@
-/* ---------------------------------------------------------------------
- Modal
+/** --------------------------------------------------------------------
+ * MODAL VIEW OBJECT
+ *
+ * SCSS Dependencies:
+ *    - Opacity vendor mixin /src/assets/scss/helpers/_vendor.scss
+ *    - Transition vendor mixin /src/assets/scss/helpers/_vendor.scss
+ *    - isVisuallyHidden mixin /src/assets/scss/helpers/_mixins.scss
+ *
+ * The following CSS is a starting point. This modal is largely un-styled
+ * and will require additional styling to fit your project needs.
 ------------------------------------------------------------------------ */
-// When the modal is active, hide overflow to avoid double scrollbars
-// .hasModal is added via ModalView.js
-html.hasModal {
+
+/* ---------------------------------------------------------------------
+ MODAL UTILITIES
+
+ When the modal is active, hide overflow on the HTML element to avoid
+ double scrollbars in the browser window.
+
+ The .hasModal state class is added via ModalView.js on the <html> tag
+------------------------------------------------------------------------ */
+.hasModal {
     overflow: hidden;
 }
 
+/* ---------------------------------------------------------------------
+ SNEEZEGUARD
+
+ Set to display: none by default as it provides no benefit to assistive
+ devices. The sneezeguard acts as a visual barries between the site
+ content and the modal content. It also acts as a "click blocker" as
+ click events may not pass through to other elements on the page
+
+ The .isActive class is added via ModalView.js
+------------------------------------------------------------------------ */
 .sneezeguard {
-    position: fixed; // fixed to window using conflicting positioning in order to fill screen
+    position: fixed; // conflicting positioning used to fill screen
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    display: none; // by default, the sneezeguard is hidden
+    display: none;
     background-color: #000000; // lte IE8 fallback
     background-color: rgba(0, 0, 0, 0.3);
-    z-index: 900; // Intended to be placed above all site content
+    z-index: 900; // Placed above all site content, update as necessary
     @include opacity(0);
     // @include transition(1s linear opacity); TODO: add check for csstransitions in js
 }
 
-// isActive class applied via ModalView.js
 .sneezeguard.isActive {
     display: block;
     @include opacity(1);
 }
 
+/* ---------------------------------------------------------------------
+ MODAL
+
+ The modal object. Add your default styles as necessary to the `.modal`
+ and `.modal-wrapper` selectors. These styles will be applied both when
+ JavaScript is enabled and enabled. Add any additional stylistic
+ overrides to the `.js .modal` selector.
+
+ The .isActive class is added via ModalView.js
+------------------------------------------------------------------------ */
 .modal {
-    position: fixed; // fixed to window using conflicting positioning in order to fill screen
+    // Default styles
+}
+
+.js .modal {
+    position: fixed; // conflicting positioning used to fill screen
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
-    display: none; // by default, the modal is hidden
     overflow-x: auto;
     overflow-y: scroll;
-    z-index: 1000; // Intended to be placed above sneezeguard
+    z-index: 1000; // Placed above sneezeguard, update as necessary
     @include opacity(0);
     // @include transition(1s linear opacity); TODO: add check for csstransitions in js
 }
 
-// isActive class applied via ModalView.js
 .modal.isActive {
     display: block;
     @include opacity(1);
 }
 
 .modal-wrapper {
-    left: 50%;
-    width: 616px;
-    margin: 26px auto;
-    padding: 18px 0;
-    background: #ffffff;
-    @include box-sizing(border-box);
+    // Default styles
 }
 
-.modal-wrapper-content {
-    position: relative; // allows for absolute positioning of close button
-    max-width: 580px;
+.js .modal-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px; // A width must be set for accurate positioning. TODO: remove this dependancy
     margin: 0 auto;
-    padding: 18px;
-    @include box-sizing(border-box);
+    background: #ffffff;
+}
+
+// If JavaScript is not enabled, hide the modal close button
+.no-js .modal-wrapper-content-close {
+    display: none;
 }
