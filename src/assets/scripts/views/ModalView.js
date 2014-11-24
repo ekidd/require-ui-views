@@ -1,23 +1,36 @@
 define(function(require, exports, module) { // jshint ignore:line
     'use strict';
 
-    // require('modernizr'); TODO: turn this on when adding feature detection
+    require('modernizr');
     var $ = require('jquery');
-    // var modernizr = window.Modernizr; TODO: turn this on when adding feature detection
+    var modernizr = window.Modernizr;
 
     /**
-     * An object of strings used in this view
+     * An object of class names used in this view
      * @default null
-     * @property STRINGS
+     * @property CLASSES
      * @type {Object}
      * @final
      */
-    var STRINGS = {
-        TARGET: 'data-modal-target',
+    var CLASSES = {
         SNEEZEGUARD: 'sneezeguard',
         IS_ACTIVE: 'isActive',
+        IS_TRANSITIONING: 'isTransitioning',
         IS_VISUALLY_HIDDEN: 'isVisuallyHidden',
         HAS_MODAL: 'hasModal'
+    };
+
+    /**
+     * An object of events used in this view
+     * @default null
+     * @property EVENTS
+     * @type {Object}
+     * @final
+     */
+    var EVENTS = {
+        CLICK: 'click',
+        KEY_UP: 'keyup',
+        TRANSITION_END: 'transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd'
     };
 
     /**
@@ -29,10 +42,22 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     var SELECTORS = {
         MODAL_TRIGGER_CLASS: '.js-modal-trigger',
+        MODAL_TARGET_NAME: 'data-modal-target',
         MODAL_TARGET_CLASS: '.js-modal-target',
         MODAL_CONTENT_CLASS: '.js-modal-wrapper',
         MODAL_CLOSE_CLASS: '.js-modal-close'
     };
+
+    /**
+     * An array of key codes used in this view
+     * @default null
+     * @property KEYS
+     * @type {Object}
+     * @final
+     */
+    var KEYS = [
+        27 // escape key
+    ];
 
     //////////////////////////////////////////////////////////////////////////////////
     // HELPERS
@@ -57,7 +82,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @return {Object} $modalTarget A jQuery object of the intended modal target
      */
     var _getModalTarget = function(e) {
-        return $('#' + $(e.currentTarget).attr(STRINGS.TARGET));
+        return $('#' + $(e.currentTarget).attr(SELECTORS.MODAL_TARGET_NAME));
     };
 
     /**
@@ -111,16 +136,6 @@ define(function(require, exports, module) { // jshint ignore:line
          * @public
          */
         this.$html = null;
-
-        /**
-         * A reference to the body element
-         *
-         * @default null
-         * @property $body
-         * @type {jQuery}
-         * @public
-         */
-        this.$body = null;
 
         /**
          * A reference to the window
@@ -277,6 +292,7 @@ define(function(require, exports, module) { // jshint ignore:line
         this.onCloseClickHandler = this.onCloseClick.bind(this);
         this.onKeyUpHandler = this.onKeyUp.bind(this);
         this.onDocumentClickHandler = this.onDocumentClick.bind(this);
+        this.onTransitionEndHandler = this.onTransitionEnd.bind(this);
 
         return this;
     };
@@ -291,17 +307,13 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.createChildren = function() {
         this.$html = $('html');
-        this.$body = $('body');
         this.$window = $(window);
         this.$document = $(document);
         this.$modal = $(SELECTORS.MODAL_TARGET_CLASS);
         this.$trigger = $(SELECTORS.MODAL_TRIGGER_CLASS);
         this.$modalContent = this.$element.find(SELECTORS.MODAL_CONTENT_CLASS);
         this.$modalClose = this.$element.find(SELECTORS.MODAL_CLOSE_CLASS);
-        this.$sneezeguard = $('<div />', {
-                class: STRINGS.SNEEZEGUARD
-            })
-            .appendTo(this.$body);
+        this.$sneezeguard = $('<div />').addClass(CLASSES.SNEEZEGUARD).appendTo($('body'));
 
         return this;
     };
@@ -315,7 +327,6 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.removeChildren = function() {
         this.$html = null;
-        this.$body = null;
         this.$window = null;
         this.$document = null;
         this.$modal = null;
@@ -342,10 +353,11 @@ define(function(require, exports, module) { // jshint ignore:line
             return this;
         }
 
-        this.$trigger.on('click', this.onTriggerClickHandler);
-        this.$modalClose.on('click', this.onCloseClickHandler);
-        this.$document.on('click', this.onDocumentClickHandler);
-        this.$document.on('keyup', this.onKeyUpHandler);
+        this.$trigger.on(EVENTS.CLICK, this.onTriggerClickHandler);
+        this.$modalClose.on(EVENTS.CLICK, this.onCloseClickHandler);
+        this.$document.on(EVENTS.CLICK, this.onDocumentClickHandler);
+        this.$document.on(EVENTS.KEY_UP, this.onKeyUpHandler);
+        this.$modal.on(EVENTS.TRANSITION_END, this.onTransitionEndHandler);
 
         this.viewIsEnabled = true;
 
@@ -366,10 +378,11 @@ define(function(require, exports, module) { // jshint ignore:line
             return this;
         }
 
-        this.$trigger.off('click', this.onTriggerClickHandler);
-        this.$modalClose.off('click', this.onCloseClickHandler);
-        this.$document.off('click', this.onDocumentClickHandler);
-        this.$document.off('keyup', this.onKeyUpHandler);
+        this.$trigger.off(EVENTS.CLICK, this.onTriggerClickHandler);
+        this.$modalClose.off(EVENTS.CLICK, this.onCloseClickHandler);
+        this.$document.off(EVENTS.CLICK, this.onDocumentClickHandler);
+        this.$document.off(EVENTS.KEY_UP, this.onKeyUpHandler);
+        this.$modal.off(EVENTS.TRANSITION_END, this.onTransitionEndHandler);
 
         this.viewIsEnabled = false;
 
@@ -397,78 +410,95 @@ define(function(require, exports, module) { // jshint ignore:line
      * Triggers auto positioning if applicable
      * @method showModal
      * @public
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     * @param {jQuery} $modalTarget A jQuery object of the target modal
      */
     proto.showModal = function($modalTarget) {
-        // TODO: Add a function to display the modal off screen, measure it, then move on
-        // This should allow for width-agnostic modals to still be centered correctly
-        // Also may want to move some of this to a layout function to provide better support for no-js
-        $modalTarget.removeClass(STRINGS.IS_VISUALLY_HIDDEN);
-        this.$html.addClass(STRINGS.HAS_MODAL);
+        this.modalIsActive = true;
         this.$sneezeguard.show();
 
         if (this.options.autoPosition && this.$modalContent.height() < this.$window.height()) {
+            // TODO: Add a function to display the modal off screen, measure it, then move on
+            // This should allow for width-agnostic modals to still be centered correctly
             _setPosition($modalTarget);
         }
 
-        this.toggleModal($modalTarget, true);
-
-        // Set focus to the modal close element
-        this.$modalClose.focus();
+        this.toggleModal($modalTarget);
     };
 
     /**
      * Hides the modal
      * @method hideModal
      * @public
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     * @param {jQuery} $modalTarget A jQuery object of the target modal
      */
     proto.hideModal = function($modalTarget) {
-        this.toggleModal($modalTarget, false);
+        this.modalIsActive = false;
+        this.toggleModal($modalTarget);
+    };
 
-        if (this.$returnFocus != null) {
-            // Return focus to the element that triggered the modal
-            this.$returnFocus.focus();
-            this.$returnFocus = null;
+    /**
+     * Toggles the modal's visibility using feature detection
+     * @method toggleModal
+     * @public
+     * @param {jQuery} $modalTarget A jQuery object of the modal
+     */
+    proto.toggleModal = function($modalTarget) {
+        if (this.modalIsActive) {
+            this.$html.addClass(CLASSES.HAS_MODAL);
+            $modalTarget.removeClass(CLASSES.IS_VISUALLY_HIDDEN);
+        }
+
+        if (modernizr.csstransitions) {
+            this.transitionWithCSS($modalTarget);
+        } else {
+            this.animateWithJQuery($modalTarget);
         }
     };
 
     /**
-     * Toggles the modal visibility
-     * @method toggleModal
+     * Transitions the modal's visibility using CSS
+     * @method transitionWithCSS
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
-     * @param {bool}
      */
-    proto.toggleModal = function($modalTarget, isActive) {
+    proto.transitionWithCSS = function($modalTarget) {
+        this.$sneezeguard.toggleClass(CLASSES.IS_ACTIVE);
+        $modalTarget.toggleClass(CLASSES.IS_ACTIVE);
+    };
+
+    /**
+     * Animates the modal's visibility using jQuery
+     * This is the fallback if CSS Transitions are not supported
+     * @method animateWithJQuery
+     * @public
+     * @param {jQuery} $modalTarget A jQuery object of the modal
+     */
+    proto.animateWithJQuery = function($modalTarget) {
         var self = this;
-        var opacity = isActive ? 1 : 0;
+        var opacity = this.modalIsActive ? 1 : 0;
 
-        // TODO: add a check for csstransition support, and if true use jQuery as the fallback
-        // if (!modernizr.csstransitions) {
-            $modalTarget
-                .animate({
-                    opacity: opacity
-                },
-                this.options.duration,
-                function() {
-                    $modalTarget
-                        .toggleClass(STRINGS.IS_ACTIVE)
-                        .removeAttr('style');
-                    self.onComplete($modalTarget, isActive);
-                });
+        $modalTarget
+            .animate({
+                opacity: opacity
+            },
+            this.options.duration,
+            this.options.timing,
+            function() {
+                $modalTarget
+                    .toggleClass(CLASSES.IS_ACTIVE);
+                self.onComplete($modalTarget);
+            });
 
-            this.$sneezeguard
-                .animate({
-                    opacity: opacity
-                },
-                this.options.duration,
-                function() {
-                    self.$sneezeguard
-                        .toggleClass(STRINGS.IS_ACTIVE)
-                        .removeAttr('style');
-                });
-        // }
+        this.$sneezeguard
+            .animate({
+                opacity: opacity
+            },
+            this.options.duration,
+            this.options.timing,
+            function() {
+                self.$sneezeguard
+                    .toggleClass(CLASSES.IS_ACTIVE);
+            });
     };
 
     /**
@@ -476,18 +506,23 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method onComplete
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
-     * @param {bool}
      */
-    proto.onComplete = function($modalTarget, isActive) {
-        if (!isActive) {
-            this.$html.removeClass(STRINGS.HAS_MODAL);
-            $modalTarget.addClass(STRINGS.IS_VISUALLY_HIDDEN);
-            // TODO: clear aria-live="polite"
+    proto.onComplete = function($modalTarget) {
+        if (this.modalIsActive) {
+            this.$modalClose.focus();
+            $modalTarget.attr('aria-live', 'polite');
         } else {
-            // TODO: add aria-live="polite"
-        }
+            this.$sneezeguard.removeAttr('style');
+            this.$html.removeClass(CLASSES.HAS_MODAL);
+            $modalTarget
+                .attr('aria-live', 'off')
+                .addClass(CLASSES.IS_VISUALLY_HIDDEN);
 
-        this.modalIsActive = isActive;
+            if (this.$returnFocus != null) {
+                this.$returnFocus.focus();
+                this.$returnFocus = null;
+            }
+        }
     };
 
     /**
@@ -519,19 +554,23 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.onTriggerClick = function(e) {
         var $modalTarget = _getModalTarget(e);
+        var $trigger = $(e.currentTarget);
 
-        // if the $modalTarget is not found, return early
         if (!$modalTarget.length) {
             return;
         }
 
         e.preventDefault();
+        e.stopPropagation();
 
-        // Set a reference to the activating trigger
+        // Set a reference to the activating trigger in order to return focus to it on close
         if (this.$returnFocus == null) {
-            this.$returnFocus = $(e.currentTarget);
+            this.$returnFocus = $trigger;
         }
 
+        // Remove focus in order to prevent accidental multiple key press events
+        // i.e. hitting the 'return' key twice in quick succession
+        $trigger.blur();
         this.showModal($modalTarget);
     };
 
@@ -543,13 +582,17 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.onCloseClick = function(e) {
         var $modalTarget = _getModalTarget(e);
+        var $trigger = $(e.currentTarget);
 
-        // if the $modalTarget is not found, return early
         if (!$modalTarget.length) {
             return;
         }
 
         e.preventDefault();
+
+        // Remove focus in order to prevent accidental multiple key press events
+        // i.e. hitting the 'return' key twice in quick succession
+        $trigger.blur();
         this.hideModal($modalTarget);
     };
 
@@ -560,8 +603,9 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} e The event object returned by the keyup
      */
     proto.onKeyUp = function(e) {
-        // keyCode 27 = escape key
-        if (e.keyCode === 27 && this.modalIsActive) {
+        var pressedKey = $.inArray(e.keyCode, KEYS);
+
+        if (pressedKey >= 0 && this.modalIsActive) {
             this.cleanUp();
         }
     };
@@ -573,7 +617,6 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} e The event object returned by the click
      */
     proto.onDocumentClick = function(e) {
-        // If the modal is not active, return early
         if (!this.modalIsActive) {
             return;
         }
@@ -581,6 +624,16 @@ define(function(require, exports, module) { // jshint ignore:line
         if(!$(e.target).closest(this.$modalContent).length) {
             this.cleanUp();
         }
+    };
+
+    /**
+     * Runs onComplete functions on transition end
+     * @method onTransitionEnd
+     * @public
+     * @param {Object} e The event object returned by the click
+     */
+    proto.onTransitionEnd = function(e) {
+        this.onComplete($(e.currentTarget));
     };
 
     return ModalView;
