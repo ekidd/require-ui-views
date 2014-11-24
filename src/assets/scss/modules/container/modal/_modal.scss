@@ -9,6 +9,9 @@
  * The following CSS is a starting point. This modal is largely un-styled
  * and will require additional styling to fit your project needs.
 ------------------------------------------------------------------------ */
+$modal-TRANSITION: 0.4s ease opacity;
+$sneezeguard-ZINDEX: 900;
+$modal-ZINDEX: 1000;
 
 /* ---------------------------------------------------------------------
  MODAL UTILITIES
@@ -39,11 +42,11 @@
     bottom: 0;
     left: 0;
     display: none;
-    background-color: #000000; // lte IE8 fallback
-    background-color: rgba(0, 0, 0, 0.3);
-    z-index: 900; // Placed above all site content, update as necessary
+    background-color: #000000; // lte IE8 fallback, update as needed
+    background-color: rgba(0, 0, 0, 0.3); // Update as needed
+    z-index: $sneezeguard-ZINDEX;
     @include opacity(0);
-    // @include transition(1s linear opacity); TODO: add check for csstransitions in js
+    @include transition($modal-TRANSITION);
 }
 
 .sneezeguard.isActive {
@@ -73,13 +76,12 @@
     left: 0;
     overflow-x: auto;
     overflow-y: scroll;
-    z-index: 1000; // Placed above sneezeguard, update as necessary
+    z-index: $modal-ZINDEX;
     @include opacity(0);
-    // @include transition(1s linear opacity); TODO: add check for csstransitions in js
+    @include transition($modal-TRANSITION);
 }
 
 .modal.isActive {
-    display: block;
     @include opacity(1);
 }
 
@@ -93,7 +95,7 @@
     left: 50%;
     width: 600px; // A width must be set for accurate positioning. TODO: remove this dependancy
     margin: 0 auto;
-    background: #ffffff;
+    background: #ffffff; // Update as needed
 }
 
 // If JavaScript is not enabled, hide the modal close button
