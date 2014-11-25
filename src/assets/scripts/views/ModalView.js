@@ -294,7 +294,7 @@ define(function(require, exports, module) { // jshint ignore:line
 
     /**
      * Initializes the UI Component View
-     * Runs a single setupHandlers call, followed by createChildren, layout and enable
+     * Runs a single setupHandlers call, followed by createChildren and enable
      *
      * @method init
      * @public
@@ -303,7 +303,6 @@ define(function(require, exports, module) { // jshint ignore:line
     proto.init = function() {
         this.setupHandlers()
             .createChildren()
-            .layout()
             .enable();
 
         return this;
@@ -338,7 +337,7 @@ define(function(require, exports, module) { // jshint ignore:line
     proto.createChildren = function() {
         this.$html = $('html');
         this.$document = $(document);
-        this.$modal = $(SELECTORS.MODAL_TARGET_CLASS);
+        this.$modal = $(SELECTORS.MODAL_TARGET_CLASS).addClass(CLASSES.IS_VISUALLY_HIDDEN);
         this.$trigger = $(SELECTORS.MODAL_TRIGGER_CLASS);
         this.$modalContent = this.$element.find(SELECTORS.MODAL_CONTENT_CLASS);
         this.$modalClose = this.$element.find(SELECTORS.MODAL_CLOSE_CLASS);
@@ -363,19 +362,6 @@ define(function(require, exports, module) { // jshint ignore:line
         this.$modalClose = null;
         this.$sneezeguard = null;
         this.$returnFocus = null;
-
-        return this;
-    };
-
-    /**
-     * Applies specific layout for this view in order to prepare it in the DOM
-     *
-     * @method layout
-     * @public
-     * @chainable
-     */
-    proto.layout = function() {
-        this.$modal.show().addClass(CLASSES.IS_VISUALLY_HIDDEN);
 
         return this;
     };

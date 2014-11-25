@@ -77,7 +77,6 @@ $modal-ZINDEX: 1000;
     left: 0;
     overflow-x: auto;
     overflow-y: scroll;
-    display: none;
     z-index: $modal-ZINDEX;
     @include opacity(0);
     @include transition($modal-TRANSITION);
