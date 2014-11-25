@@ -63,6 +63,7 @@ $modal-ZINDEX: 1000;
  overrides to the `.js .modal` selector.
 
  The .isActive class is added via ModalView.js
+ The .isBeingMeasured class is added via ModalView.js
 ------------------------------------------------------------------------ */
 .modal {
     // Default styles
@@ -86,16 +87,23 @@ $modal-ZINDEX: 1000;
 }
 
 .modal-wrapper {
-    // Default styles
+    // Default styles, update as needed
+    max-width: 600px; // If the modal content does not set an implicit width, set one here
+    background: #ffffff;
 }
 
 .js .modal-wrapper {
     position: absolute;
-    top: 50%;
+    top: 0;
     left: 50%;
-    width: 600px; // A width must be set for accurate positioning. TODO: remove this dependancy
     margin: 0 auto;
-    background: #ffffff; // Update as needed
+}
+
+.modal-wrapper.isBeingMeasured {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -9000px;
 }
 
 // If JavaScript is not enabled, hide the modal close button

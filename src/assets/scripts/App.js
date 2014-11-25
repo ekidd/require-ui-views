@@ -1,10 +1,7 @@
 define(function(require, exports, module) { // jshint ignore:line
     'use strict';
 
-    require('modernizr');
     var $ = require('jquery');
-    var HasJs = require('nerdery-has-js');
-
     var ModalView = require('./views/ModalView');
 
     /**
@@ -14,7 +11,6 @@ define(function(require, exports, module) { // jshint ignore:line
      * @constructor
      */
     var App = function() {
-        HasJs.init();
         this.init();
     };
 
@@ -29,7 +25,7 @@ define(function(require, exports, module) { // jshint ignore:line
     proto.init = function() {
         // Modal View
         // Optional: pass in an object of config options as a second argument
-        // i.e. { duration: 1000, autoPosition: false }
+        // i.e. { duration: 1000, timing: linear, autoPosition: false }
         this.modalView = new ModalView($('#myModal'));
     };
 

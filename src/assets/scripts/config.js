@@ -37,8 +37,7 @@ require.config({
         requirejs: '../vendor/requirejs/require',
         jquery: '../vendor/jquery/jquery',
         modernizr: '../vendor/modernizr/modernizr',
-        'nerdery-function-bind': '../vendor/nerdery-function-bind/index',
-        'nerdery-has-js': '../vendor/nerdery-has-js/index'
+        'nerdery-function-bind': '../vendor/nerdery-function-bind/index'
     },
     shim: {
         modernizr: {

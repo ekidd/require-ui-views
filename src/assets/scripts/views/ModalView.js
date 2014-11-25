@@ -17,6 +17,7 @@ define(function(require, exports, module) { // jshint ignore:line
         IS_ACTIVE: 'isActive',
         IS_TRANSITIONING: 'isTransitioning',
         IS_VISUALLY_HIDDEN: 'isVisuallyHidden',
+        IS_BEING_MEASURED: 'isBeingMeasured',
         HAS_MODAL: 'hasModal'
     };
 
@@ -68,7 +69,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method _getOffset
      * @private
      * @param {Integer} number
-     * @return {Integer} offset
+     * @return {Integer}
      */
     var _getOffset = function(number) {
         return Math.round(number / 2) * -1;
@@ -78,26 +79,64 @@ define(function(require, exports, module) { // jshint ignore:line
      * Get the target modal
      * @method _getModalTarget
      * @private
-     * @param {Object} e The event object
+     * @param {Object} event
      * @return {Object} $modalTarget A jQuery object of the intended modal target
      */
-    var _getModalTarget = function(e) {
-        return $('#' + $(e.currentTarget).attr(SELECTORS.MODAL_TARGET_NAME));
+    var _getModalTarget = function(event) {
+        return $('#' + $(event.currentTarget).attr(SELECTORS.MODAL_TARGET_NAME));
     };
 
     /**
-     * Centers the modal in the viewport
+     * Measures the content of the modal
+     * @method _getMeasurements
+     * @private
+     * @param {jQuery} $modalContent A jQuery object of the target modal content
+     * @return {Object} measurements
+     */
+    var _getMeasurements = function($modalContent) {
+        var measurements = {};
+        var $window = $(window);
+
+        $modalContent.addClass(CLASSES.IS_BEING_MEASURED);
+
+        measurements.modalWidth = $modalContent.outerWidth();
+        measurements.modalHeight = $modalContent.outerHeight();
+        measurements.windowWidth = $window.width();
+        measurements.windowHeight = $window.height();
+
+        $modalContent.removeClass(CLASSES.IS_BEING_MEASURED);
+
+        return measurements;
+    };
+
+    /**
+     * Positions the modal in the viewport
      * @method _setPosition
      * @private
-     * @param {jQuery} $modalTarget A jQuery object of the targeted modal
+     * @param {jQuery} $modalContent A jQuery object of the target modal content
+     * @param {Object} measurements An object of dimensions
+     * @param {bool} autoPosition
      */
-    var _setPosition = function($modalTarget) {
-        var $modalContent = $modalTarget.find(SELECTORS.MODAL_CONTENT_CLASS);
+    var _setPosition = function($modalContent, measurements, autoPosition) {
+        if (measurements.modalWidth > measurements.windowWidth) {
+            $modalContent.css({
+                width: measurements.windowWidth,
+                marginLeft: _getOffset(measurements.windowWidth) + 'px'
+            });
+            // Reset modal height because the width just changed
+            measurements.modalHeight = $modalContent.outerHeight();
+        } else {
+            $modalContent.css({
+                marginLeft: _getOffset(measurements.modalWidth) + 'px'
+            });
+        }
 
-        $modalContent.css({
-            marginLeft: _getOffset($modalContent.innerWidth()) + 'px',
-            marginTop: _getOffset($modalContent.innerHeight())  + 'px'
-        });
+        if (autoPosition && measurements.modalHeight < measurements.windowHeight) {
+            $modalContent.css({
+                top: '50%',
+                marginTop: _getOffset(measurements.modalHeight) + 'px'
+            });
+        }
     };
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -136,16 +175,6 @@ define(function(require, exports, module) { // jshint ignore:line
          * @public
          */
         this.$html = null;
-
-        /**
-         * A reference to the window
-         *
-         * @default null
-         * @property $window
-         * @type {jQuery}
-         * @public
-         */
-        this.$window = null;
 
         /**
          * A reference to the document
@@ -220,7 +249,7 @@ define(function(require, exports, module) { // jshint ignore:line
         /**
          * Default configuration settings
          * Merged with local settings at instantiation
-         * @property config
+         * @property settings
          * @type {Object}
          */
         this.settings = {
@@ -268,7 +297,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * Runs a single setupHandlers call, followed by createChildren and enable
      *
      * @method init
-     * @private
+     * @public
      * @chainable
      */
     proto.init = function() {
@@ -284,7 +313,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * Should only be run on initialization of the view
      *
      * @method setupHandlers
-     * @private
+     * @public
      * @chainable
      */
     proto.setupHandlers = function() {
@@ -302,14 +331,13 @@ define(function(require, exports, module) { // jshint ignore:line
      * Should only be run on initialization of the view
      *
      * @method createChildren
-     * @private
+     * @public
      * @chainable
      */
     proto.createChildren = function() {
         this.$html = $('html');
-        this.$window = $(window);
         this.$document = $(document);
-        this.$modal = $(SELECTORS.MODAL_TARGET_CLASS);
+        this.$modal = $(SELECTORS.MODAL_TARGET_CLASS).addClass(CLASSES.IS_VISUALLY_HIDDEN);
         this.$trigger = $(SELECTORS.MODAL_TRIGGER_CLASS);
         this.$modalContent = this.$element.find(SELECTORS.MODAL_CONTENT_CLASS);
         this.$modalClose = this.$element.find(SELECTORS.MODAL_CLOSE_CLASS);
@@ -327,7 +355,6 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     proto.removeChildren = function() {
         this.$html = null;
-        this.$window = null;
         this.$document = null;
         this.$modal = null;
         this.$trigger = null;
@@ -395,8 +422,8 @@ define(function(require, exports, module) { // jshint ignore:line
      * Should be called when the object should be left unused
      *
      * @method destroy
-     * @chainable
      * @public
+     * @chainable
      */
     proto.destroy = function() {
         this.disable()
@@ -413,20 +440,17 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {jQuery} $modalTarget A jQuery object of the target modal
      */
     proto.showModal = function($modalTarget) {
+        var $modalContent = $modalTarget.find(SELECTORS.MODAL_CONTENT_CLASS);
+        var measurements = _getMeasurements($modalContent);
+
         this.modalIsActive = true;
         this.$sneezeguard.show();
-
-        if (this.options.autoPosition && this.$modalContent.height() < this.$window.height()) {
-            // TODO: Add a function to display the modal off screen, measure it, then move on
-            // This should allow for width-agnostic modals to still be centered correctly
-            _setPosition($modalTarget);
-        }
-
+        _setPosition($modalContent, measurements, this.options.autoPosition);
         this.toggleModal($modalTarget);
     };
 
     /**
-     * Hides the modal
+     * Hide the modal
      * @method hideModal
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the target modal
@@ -441,6 +465,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method toggleModal
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
+     * @chainable
      */
     proto.toggleModal = function($modalTarget) {
         if (this.modalIsActive) {
@@ -453,6 +478,8 @@ define(function(require, exports, module) { // jshint ignore:line
         } else {
             this.animateWithJQuery($modalTarget);
         }
+
+        return this;
     };
 
     /**
@@ -460,10 +487,13 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method transitionWithCSS
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
+     * @chainable
      */
     proto.transitionWithCSS = function($modalTarget) {
         this.$sneezeguard.toggleClass(CLASSES.IS_ACTIVE);
         $modalTarget.toggleClass(CLASSES.IS_ACTIVE);
+
+        return this;
     };
 
     /**
@@ -472,6 +502,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method animateWithJQuery
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
+     * @chainable
      */
     proto.animateWithJQuery = function($modalTarget) {
         var self = this;
@@ -499,6 +530,8 @@ define(function(require, exports, module) { // jshint ignore:line
                 self.$sneezeguard
                     .toggleClass(CLASSES.IS_ACTIVE);
             });
+
+        return this;
     };
 
     /**
@@ -506,6 +539,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @method onComplete
      * @public
      * @param {jQuery} $modalTarget A jQuery object of the modal
+     * @chainable
      */
     proto.onComplete = function($modalTarget) {
         if (this.modalIsActive) {
@@ -516,19 +550,24 @@ define(function(require, exports, module) { // jshint ignore:line
             this.$html.removeClass(CLASSES.HAS_MODAL);
             $modalTarget
                 .attr('aria-live', 'off')
-                .addClass(CLASSES.IS_VISUALLY_HIDDEN);
+                .addClass(CLASSES.IS_VISUALLY_HIDDEN)
+                .find(SELECTORS.MODAL_CONTENT_CLASS)
+                .removeAttr('style');
 
             if (this.$returnFocus != null) {
                 this.$returnFocus.focus();
                 this.$returnFocus = null;
             }
         }
+
+        return this;
     };
 
     /**
      * Hide any modals that may be showing in the DOM
      * @method cleanUp
      * @public
+     * @chainable
      */
     proto.cleanUp = function() {
         var self = this;
@@ -540,6 +579,8 @@ define(function(require, exports, module) { // jshint ignore:line
                 self.hideModal($(this));
             }
         );
+
+        return this;
     };
 
     //////////////////////////////////////////////////////////////////////////////////
@@ -550,18 +591,18 @@ define(function(require, exports, module) { // jshint ignore:line
      * Click handler shows modal
      * @method onTriggerClick
      * @public
-     * @param {Object} e The event object returned by the click
+     * @param {Object} event The event object returned by the click
      */
-    proto.onTriggerClick = function(e) {
-        var $modalTarget = _getModalTarget(e);
-        var $trigger = $(e.currentTarget);
+    proto.onTriggerClick = function(event) {
+        var $modalTarget = _getModalTarget(event);
+        var $trigger = $(event.currentTarget);
 
         if (!$modalTarget.length) {
             return;
         }
 
-        e.preventDefault();
-        e.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
 
         // Set a reference to the activating trigger in order to return focus to it on close
         if (this.$returnFocus == null) {
@@ -578,17 +619,17 @@ define(function(require, exports, module) { // jshint ignore:line
      * Click handler closes modal
      * @method onCloseClick
      * @public
-     * @param {Object} e The event object returned by the click
+     * @param {Object} event The event object returned by the click
      */
-    proto.onCloseClick = function(e) {
-        var $modalTarget = _getModalTarget(e);
-        var $trigger = $(e.currentTarget);
+    proto.onCloseClick = function(event) {
+        var $modalTarget = _getModalTarget(event);
+        var $trigger = $(event.currentTarget);
 
         if (!$modalTarget.length) {
             return;
         }
 
-        e.preventDefault();
+        event.preventDefault();
 
         // Remove focus in order to prevent accidental multiple key press events
         // i.e. hitting the 'return' key twice in quick succession
@@ -600,10 +641,10 @@ define(function(require, exports, module) { // jshint ignore:line
      * Handles keyup events
      * @method onKeyUp
      * @public
-     * @param {Object} e The event object returned by the keyup
+     * @param {Object} event The event object returned by the keyup
      */
-    proto.onKeyUp = function(e) {
-        var pressedKey = $.inArray(e.keyCode, KEYS);
+    proto.onKeyUp = function(event) {
+        var pressedKey = $.inArray(event.keyCode, KEYS);
 
         if (pressedKey >= 0 && this.modalIsActive) {
             this.cleanUp();
@@ -614,14 +655,14 @@ define(function(require, exports, module) { // jshint ignore:line
      * Closes modal when the document is clicked outside the modal
      * @method onDocumentClick
      * @public
-     * @param {Object} e The event object returned by the click
+     * @param {Object} event The event object returned by the click
      */
-    proto.onDocumentClick = function(e) {
+    proto.onDocumentClick = function(event) {
         if (!this.modalIsActive) {
             return;
         }
 
-        if(!$(e.target).closest(this.$modalContent).length) {
+        if(!$(event.target).closest(this.$modalContent).length) {
             this.cleanUp();
         }
     };
@@ -630,10 +671,10 @@ define(function(require, exports, module) { // jshint ignore:line
      * Runs onComplete functions on transition end
      * @method onTransitionEnd
      * @public
-     * @param {Object} e The event object returned by the click
+     * @param {Object} event The event object returned by the click
      */
-    proto.onTransitionEnd = function(e) {
-        this.onComplete($(e.currentTarget));
+    proto.onTransitionEnd = function(event) {
+        this.onComplete($(event.currentTarget));
     };
 
     return ModalView;
