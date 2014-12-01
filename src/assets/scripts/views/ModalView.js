@@ -15,7 +15,6 @@ define(function(require, exports, module) { // jshint ignore:line
     var CLASSES = {
         SNEEZEGUARD: 'sneezeguard',
         IS_ACTIVE: 'isActive',
-        IS_TRANSITIONING: 'isTransitioning',
         IS_VISUALLY_HIDDEN: 'isVisuallyHidden',
         IS_BEING_MEASURED: 'isBeingMeasured',
         HAS_MODAL: 'hasModal'
