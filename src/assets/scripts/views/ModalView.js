@@ -16,7 +16,6 @@ define(function(require, exports, module) { // jshint ignore:line
         SNEEZEGUARD: 'sneezeguard',
         IS_ACTIVE: 'isActive',
         IS_VISUALLY_HIDDEN: 'isVisuallyHidden',
-        IS_BEING_MEASURED: 'isBeingMeasured',
         HAS_MODAL: 'hasModal'
     };
 
@@ -64,17 +63,6 @@ define(function(require, exports, module) { // jshint ignore:line
     //////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Utility method for getting positioning offsets
-     * @method _getOffset
-     * @private
-     * @param {Integer} number
-     * @return {Integer}
-     */
-    var _getOffset = function(number) {
-        return Math.round(number / 2) * -1;
-    };
-
-    /**
      * Get the target modal
      * @method _getModalTarget
      * @private
@@ -94,16 +82,7 @@ define(function(require, exports, module) { // jshint ignore:line
      */
     var _getMeasurements = function($modalContent) {
         var measurements = {};
-        var $window = $(window);
-
-        $modalContent.addClass(CLASSES.IS_BEING_MEASURED);
-
-        measurements.modalWidth = $modalContent.outerWidth();
-        measurements.modalHeight = $modalContent.outerHeight();
-        measurements.windowWidth = $window.width();
-        measurements.windowHeight = $window.height();
-
-        $modalContent.removeClass(CLASSES.IS_BEING_MEASURED);
+        // Get any measurements you need for positioning here
 
         return measurements;
     };
@@ -117,25 +96,7 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {bool} autoPosition
      */
     var _setPosition = function($modalContent, measurements, autoPosition) {
-        if (measurements.modalWidth > measurements.windowWidth) {
-            $modalContent.css({
-                width: measurements.windowWidth,
-                marginLeft: _getOffset(measurements.windowWidth) + 'px'
-            });
-            // Reset modal height because the width just changed
-            measurements.modalHeight = $modalContent.outerHeight();
-        } else {
-            $modalContent.css({
-                marginLeft: _getOffset(measurements.modalWidth) + 'px'
-            });
-        }
-
-        if (autoPosition && measurements.modalHeight < measurements.windowHeight) {
-            $modalContent.css({
-                top: '50%',
-                marginTop: _getOffset(measurements.modalHeight) + 'px'
-            });
-        }
+        // Write positioning logic here
     };
 
     //////////////////////////////////////////////////////////////////////////////////
