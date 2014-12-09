@@ -8,6 +8,7 @@
  *
  * The following CSS is a starting point. This modal is largely un-styled
  * and will require additional styling to fit your project needs.
+ * Update the variables and class names below to fit your project
 ------------------------------------------------------------------------ */
 $modal-TRANSITION: 0.4s ease opacity;
 $sneezeguard-ZINDEX: 900;
@@ -36,11 +37,7 @@ $modal-ZINDEX: 1000;
  The .isActive class is added via ModalView.js
 ------------------------------------------------------------------------ */
 .sneezeguard {
-    position: fixed; // conflicting positioning used to fill screen
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    // set your sneezeguard positioning here
     display: none;
     background-color: #000000; // lte IE8 fallback, update as needed
     background-color: rgba(0, 0, 0, 0.3); // Update as needed
@@ -70,13 +67,7 @@ $modal-ZINDEX: 1000;
 }
 
 .js .modal {
-    position: fixed; // conflicting positioning used to fill screen
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    overflow-x: auto;
-    overflow-y: scroll;
+    // set your modal positioning and overflow handling here
     z-index: $modal-ZINDEX;
     @include opacity(0);
     @include transition($modal-TRANSITION);
@@ -88,14 +79,12 @@ $modal-ZINDEX: 1000;
 
 .modal-wrapper {
     // Default styles, update as needed
-    max-width: 600px; // If the modal content does not set an implicit width, set one here
+    // If the modal content does not set an implicit width, set one here
     background: #ffffff;
 }
 
 .js .modal-wrapper {
-    position: absolute;
-    top: 0;
-    left: 50%;
+    // set your modal content positioning here
     margin: 0 auto;
 }
 

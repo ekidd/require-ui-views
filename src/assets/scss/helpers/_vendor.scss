@@ -15,15 +15,6 @@
     transition: $transition;
 }
 
-// Multiple arguments may be passed in.
-@mixin transform($transform...) {
-    -webkit-transform: $transform;
-    -moz-transform: $transform;
-    -ms-transform: $transform;
-    -o-transform: $transform;
-    transform: $transform;
-}
-
 // Argument is a number from 0 and 1.
 @mixin opacity($value) {
     $ieValue: abs($value * 100);
