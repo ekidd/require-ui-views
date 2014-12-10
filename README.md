@@ -22,12 +22,12 @@ Installation of Node.js is a prerequisite to running the Grunt build tool. Run t
         defaults write com.apple.finder AppleShowAllFiles TRUE
         killall Finder
 
-1. In your home directory, open the file `.bash_profile` in an editor (depending on your system, this file may also be called `.profile`, `.zlogin`, etc). Append the following lines to the very bottom, and save the file:
+2. In your home directory, open the file `.bash_profile` in an editor (depending on your system, this file may also be called `.profile`, `.zlogin`, etc). Append the following lines to the very bottom, and save the file:
 
         export N_PREFIX=$HOME/.node
         export PATH=$N_PREFIX/bin:$PATH
 
-1. Open a *NEW* terminal window. On the command line, navigate to the root directory of the project and enter the following:
+3. Open a *NEW* terminal window. On the command line, navigate to the root directory of the project and enter the following:
 
         cd tools
         chmod 770 node-install.sh
@@ -38,18 +38,18 @@ Installation of Node.js is a prerequisite to running the Grunt build tool. Run t
 Grunt will expect a file called `build-env.js` in the project root. This contains environment-specific settings for the build process in much the same way as an .htaccess file, web.config, etc.
 
 1. Copy the `build-env.js.dist` file in the root of your project to `build-env.js`.
-1. Edit entries in this file to tailor the build process. Normally, you do not need to modify the settings in this file unless you want to change the built output paths.
+2. Edit entries in this file to tailor the build process. Normally, you do not need to modify the settings in this file unless you want to change the built output paths.
 
 ### Step Three - Add grunt plugins
 
 A baseline set of Grunt build tasks are included which will work for most projects out-of-the-box. Beyond that, there are hundreds of additional Grunt plugins available which can run additional tasks that may be useful for your project.
 
 1. (Optional) Add a new line for each Grunt plugin you want to add to `package.json` in the project root.
-1. On the command line, navigate to the root directory of the project and enter the following.
+2. On the command line, navigate to the root directory of the project and enter the following.
 
         npm install
 
-1. This will scan the file `package.json` and download each plugin into the directory `node_modules`.
+3. This will scan the file `package.json` and download each plugin into the directory `node_modules`.
 
 ### Step Four - Add bower libraries
 Add 3rd-party libraries to your project using bower.
@@ -59,8 +59,8 @@ Add 3rd-party libraries to your project using bower.
 
         bower install
 
-1. Commit the new libraries created under `src/assets/vendor` to source control.
-2. (Optional) Run the following command to automatically add a reference to each bower library into your code. If you're using RequireJS, a new entry for each library will be added to  `/src/assets/scripts/config.js`. Otherwise, script tags will be added `/src/index.html`.
+3. Commit the new libraries created under `src/assets/vendor` to source control.
+4. (Optional) Run the following command to automatically add a reference to each bower library into your code. If you're using RequireJS, a new entry for each library will be added to  `/src/assets/scripts/config.js`. Otherwise, script tags will be added `/src/index.html`.
 
         grunt install
 
@@ -74,7 +74,7 @@ To view the build project, point your web browser to /web. For instance, if you 
 Any time you make changes to any file in your source code, run a build as follows:
 
 1. Make changes to any file in `/src` (markup, stylesheets, scripts, etc.)
-1. On the command line, navigate to the root directory of your project and enter the following:
+2. On the command line, navigate to the root directory of your project and enter the following:
 
         grunt
 
@@ -88,7 +88,7 @@ _Use this method only when developing locally, do not use this method on shared 
 
         grunt watch
 
-1. A persistent file watcher will run. This automatically does a new Grunt build every time it detects a change to a file in `/src` (markup, stylesheets, scripts, etc.)
+2. A persistent file watcher will run. This automatically does a new Grunt build every time it detects a change to a file in `/src` (markup, stylesheets, scripts, etc.)
 
 ## Documentation
 
@@ -110,3 +110,11 @@ _Use this method only when developing locally, do not use this method on shared 
         /tools
             /node      /* Optional standalone executables for node+bower+grunt to be bundled with project */
         /web           /* The built website output runnable in the browser */
+
+## Versioning
+
+Update the version number in following files for versioning of the codebase:
+
+1. `package.json`
+2. `bower.json`
+3. `src/templates/partials/_footer.html`

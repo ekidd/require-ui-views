@@ -88,7 +88,7 @@ module.exports = function(grunt) {
         // Ran `grunt --stage`
         grunt.option('stage') ? ['lint', 'build'] :
         // Ran `grunt --prod`
-        grunt.option('prod')  ? ['lint', 'test', 'build', 'docs'] : []
+        grunt.option('prod')  ? ['lint', 'build', 'docs'] : []
     );
 
     grunt.registerTask('build', 'Compile source code and outputs to destination.',
@@ -105,10 +105,6 @@ module.exports = function(grunt) {
 
     grunt.registerTask('lint', 'Validate code syntax.',
         ['lintScripts']
-    );
-
-    grunt.registerTask('test', 'Execute tests.',
-        ['testScripts']
     );
 
     grunt.loadNpmTasks('grunt-contrib-watch');

@@ -1,6 +1,6 @@
 {
   "name": "require-ui-views",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "dependencies": {
     "nerdery-reset-css": "./tools/cache/nerdery-reset-css",
