@@ -110,3 +110,11 @@ _Use this method only when developing locally, do not use this method on shared 
         /tools
             /node      /* Optional standalone executables for node+bower+grunt to be bundled with project */
         /web           /* The built website output runnable in the browser */
+
+## Versioning
+
+Update the version number in following files for versioning of the codebase:
+
+1. `package.json`
+2. `bower.json`
+3. `src/templates/partials/_footer.html`
