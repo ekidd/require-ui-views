@@ -320,6 +320,7 @@ define(function(require, exports, module) { // jshint ignore:line
         this.$trigger = null;
         this.$modalContent = null;
         this.$modalClose = null;
+        this.$sneezeguard.remove();
         this.$sneezeguard = null;
         this.$returnFocus = null;
 
@@ -525,11 +526,11 @@ define(function(require, exports, module) { // jshint ignore:line
 
     /**
      * Hide any modals that may be showing in the DOM
-     * @method cleanUp
+     * @method hideAll
      * @public
      * @chainable
      */
-    proto.cleanUp = function() {
+    proto.hideAll = function() {
         var self = this;
         var $modalTarget = $(SELECTORS.MODAL_TARGET_CLASS);
 
@@ -607,7 +608,7 @@ define(function(require, exports, module) { // jshint ignore:line
         var pressedKey = $.inArray(event.keyCode, KEYS);
 
         if (pressedKey >= 0 && this.modalIsActive) {
-            this.cleanUp();
+            this.hideAll();
         }
     };
 
@@ -623,7 +624,7 @@ define(function(require, exports, module) { // jshint ignore:line
         }
 
         if(!$(event.target).closest(this.$modalContent).length) {
-            this.cleanUp();
+            this.hideAll();
         }
     };
 
