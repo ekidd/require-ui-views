@@ -69,9 +69,9 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} event
      * @return {Object} $modalTarget A jQuery object of the intended modal target
      */
-    var _getModalTarget = function(event) {
+    function _getModalTarget(event) {
         return $('#' + $(event.currentTarget).attr(SELECTORS.MODAL_TARGET_NAME));
-    };
+    }
 
     /**
      * Measures the content of the modal
@@ -80,12 +80,12 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {jQuery} $modalContent A jQuery object of the target modal content
      * @return {Object} measurements
      */
-    var _getMeasurements = function($modalContent) {
+    function _getMeasurements($modalContent) {
         var measurements = {};
         // Get any measurements you need for positioning here
 
         return measurements;
-    };
+    }
 
     /**
      * Positions the modal in the viewport
@@ -95,9 +95,9 @@ define(function(require, exports, module) { // jshint ignore:line
      * @param {Object} measurements An object of dimensions
      * @param {bool} autoPosition
      */
-    var _setPosition = function($modalContent, measurements, autoPosition) {
+    function _setPosition($modalContent, measurements, autoPosition) {
         // Write positioning logic here
-    };
+    }
 
     //////////////////////////////////////////////////////////////////////////////////
     // CONSTRUCTOR
