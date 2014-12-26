@@ -7,7 +7,8 @@
     "requirejs": "2.1.9",
     "jquery": "components/jquery#1.11.0",
     "modernizr": "components/modernizr#2.6.2",
-    "nerdery-function-bind": "./tools/cache/nerdery-function-bind"
+    "nerdery-function-bind": "./tools/cache/nerdery-function-bind",
+    "matchMedia": "0.2.0"
   },
   "devDependencies": {}
 }
