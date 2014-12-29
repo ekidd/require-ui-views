@@ -208,8 +208,9 @@ define(function(require, exports, module) { // jshint ignore:line
             }
         }
 
+        // Add breakpoint change logic and/or direction logic here
+
         // TODO: remove this statement in production code.
-        // Logs the current breakpoint to the console for testing and debugging
         console.log(this.currentBreakpoint);
 
         return this;
