@@ -3,6 +3,8 @@
 ._.DS_Store
 .idea/*
 .tmp/
+/src/assets/scss/helpers/_sharedConfig.scss
+/src/assets/scripts/sharedConfig.js
 /docs/
 /build-reports/
 /build-env.js

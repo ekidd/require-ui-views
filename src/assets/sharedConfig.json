@@ -1,0 +1,7 @@
+{
+    "breakpoints": {
+        "small": "'screen and (min-width: 400px)'",
+        "medium": "'screen and (min-width: 600px)'",
+        "large": "'screen and (min-width: 800px)'"
+    }
+}

@@ -76,6 +76,10 @@ module.exports = function(grunt) {
             watchScripts: {
                 files: ['<%= env.DIR_SRC %>/assets/{scripts,vendor}/**/*.js'],
                 tasks: ['buildScripts']
+            },
+            watchSharedConfig: {
+                files: ['<%= env.DIR_SRC %>/assets/sharedConfig.json'],
+                tasks: ['buildSharedConfig']
             }
         }
     });
@@ -92,7 +96,7 @@ module.exports = function(grunt) {
     );
 
     grunt.registerTask('build', 'Compile source code and outputs to destination.',
-        ['clean:dest', 'buildStatic', 'buildMarkup', 'buildStyles', 'buildScripts', 'clean:tmp']
+        ['clean:dest', 'buildSharedConfig', 'buildStatic', 'buildMarkup', 'buildStyles', 'buildScripts', 'clean:tmp']
     );
 
     grunt.registerTask('docs', 'Generate documentation.',

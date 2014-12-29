@@ -37,11 +37,15 @@ require.config({
         requirejs: '../vendor/requirejs/require',
         jquery: '../vendor/jquery/jquery',
         modernizr: '../vendor/modernizr/modernizr',
-        'nerdery-function-bind': '../vendor/nerdery-function-bind/index'
+        'nerdery-function-bind': '../vendor/nerdery-function-bind/index',
+        matchMedia: '../vendor/matchMedia/matchMedia'
     },
     shim: {
         modernizr: {
             exports: 'Modernizr'
+        },
+        matchMedia: {
+            exports: 'matchMedia'
         }
     },
     waitSeconds: 120
