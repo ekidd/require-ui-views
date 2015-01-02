@@ -531,15 +531,13 @@ define(function(require, exports, module) { // jshint ignore:line
      * @chainable
      */
     proto.hideAll = function() {
-        var self = this;
+        var i = 0;
         var $modalTarget = $(SELECTORS.MODAL_TARGET_CLASS);
+        var modalCount = $modalTarget.length;
 
-        $.each(
-            $modalTarget,
-            function() {
-                self.hideModal($(this));
-            }
-        );
+        for(; i < modalCount; i++) {
+            this.hideModal($modalTarget.eq(i));
+        }
 
         return this;
     };
